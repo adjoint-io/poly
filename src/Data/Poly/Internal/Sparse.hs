@@ -37,6 +37,14 @@ module Data.Poly.Internal.Sparse
   , pattern X'
   , eval'
   , deriv'
+  -- * Auxiliary functions
+  , convolution
+  , minusPoly
+  , normalize
+  , normalizeM
+  , plusPoly
+  , plusPolyM
+  , scaleM
   ) where
 
 import Control.DeepSeq (NFData)
@@ -135,12 +143,19 @@ leading (Poly v)
   | G.null v  = Nothing
   | otherwise = Just (G.last v)
 
-normalize
+{-# SPECIALISE normalize
   :: G.Vector v (Word, a)
   => (a -> Bool)
   -> (a -> a -> a)
   -> v (Word, a)
   -> v (Word, a)
+  #-}
+normalize
+  :: (Num b, Ord b, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> v (b, a)
 normalize p add vs
   | G.null vs = vs
   | otherwise = runST $ do
@@ -148,11 +163,18 @@ normalize p add vs
     l' <- normalizeM p add ws
     G.unsafeFreeze $ MG.basicUnsafeSlice 0 l' ws
 
-normalizeM
+{-# SPECIALISE normalizeM
   :: (PrimMonad m, G.Vector v (Word, a))
   => (a -> Bool)
   -> (a -> a -> a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+normalizeM
+  :: (Num b, Ord b, PrimMonad m, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> G.Mutable v (PrimState m) (b, a)
   -> m Int
 normalizeM p add ws = do
     let l = MG.basicLength ws
@@ -216,26 +238,43 @@ instance (Eq a, Semiring a, G.Vector v (Word, a)) => Semiring (Poly v a) where
 instance (Eq a, Semiring.Ring a, G.Vector v (Word, a)) => Semiring.Ring (Poly v a) where
   negate (Poly xs) = Poly $ G.map (fmap Semiring.negate) xs
 
-plusPoly
+{-# SPECIALISE plusPoly
   :: G.Vector v (Word, a)
   => (a -> Bool)
   -> (a -> a -> a)
   -> v (Word, a)
   -> v (Word, a)
   -> v (Word, a)
+  #-}
+plusPoly
+  :: (Num b, Ord b, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> v (b, a)
+  -> v (b, a)
 plusPoly p add xs ys = runST $ do
   zs <- MG.basicUnsafeNew (G.basicLength xs + G.basicLength ys)
   lenZs <- plusPolyM p add xs ys zs
   G.unsafeFreeze $ MG.basicUnsafeSlice 0 lenZs zs
 {-# INLINE plusPoly #-}
 
-plusPolyM
+{-# SPECIALISE plusPolyM
   :: (PrimMonad m, G.Vector v (Word, a))
   => (a -> Bool)
   -> (a -> a -> a)
   -> v (Word, a)
   -> v (Word, a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+plusPolyM
+  :: (Num b, Ord b, PrimMonad m, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> v (b, a)
+  -> G.Mutable v (PrimState m) (b, a)
   -> m Int
 plusPolyM p add xs ys zs = go 0 0 0
   where
@@ -272,7 +311,7 @@ plusPolyM p add xs ys zs = go 0 0 0
           go ix (iy + 1) (iz + 1)
 {-# INLINE plusPolyM #-}
 
-minusPoly
+{-# SPECIALISE minusPoly
   :: G.Vector v (Word, a)
   => (a -> Bool)
   -> (a -> a)
@@ -280,6 +319,15 @@ minusPoly
   -> v (Word, a)
   -> v (Word, a)
   -> v (Word, a)
+  #-}
+minusPoly
+  :: (Num b, Ord b, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> v (b, a)
+  -> v (b, a)
 minusPoly p neg sub xs ys = runST $ do
   zs <- MG.basicUnsafeNew (lenXs + lenYs)
   let go ix iy iz
@@ -317,13 +365,22 @@ minusPoly p neg sub xs ys = runST $ do
     lenYs = G.basicLength ys
 {-# INLINE minusPoly #-}
 
-scaleM
+{-# SPECIALISE scaleM
   :: (PrimMonad m, G.Vector v (Word, a))
   => (a -> Bool)
   -> (a -> a -> a)
   -> v (Word, a)
   -> (Word, a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+scaleM
+  :: (Num b, Ord b, PrimMonad m, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> (b, a)
+  -> G.Mutable v (PrimState m) (b, a)
   -> m Int
 scaleM p mul xs (yp, yc) zs = go 0 0
   where
@@ -365,8 +422,8 @@ scale = scaleInternal (/= 0) (*)
 scale' :: (Eq a, Semiring a, G.Vector v (Word, a)) => Word -> a -> Poly v a -> Poly v a
 scale' = scaleInternal (/= zero) times
 
-convolution
-  :: forall v a.
+{-# SPECIALISE convolution
+  :: forall v a .
      G.Vector v (Word, a)
   => (a -> Bool)
   -> (a -> a -> a)
@@ -374,13 +431,23 @@ convolution
   -> v (Word, a)
   -> v (Word, a)
   -> v (Word, a)
+  #-}
+convolution
+  :: forall v a b .
+     (Num b, Ord b, G.Vector v (b, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> (a -> a -> a)
+  -> v (b, a)
+  -> v (b, a)
+  -> v (b, a)
 convolution p add mult xs ys
   | G.basicLength xs >= G.basicLength ys
   = go mult xs ys
   | otherwise
   = go (flip mult) ys xs
   where
-    go :: (a -> a -> a) -> v (Word, a) -> v (Word, a) -> v (Word, a)
+    go :: (a -> a -> a) -> v (b, a) -> v (b, a) -> v (b, a)
     go mul long short = runST $ do
       let lenLong   = G.basicLength long
           lenShort  = G.basicLength short
@@ -403,9 +470,9 @@ convolution p add mult xs ys
     gogo
       :: PrimMonad m
       => U.Vector (Int, Int)
-      -> v (Word, a)
-      -> G.Mutable v (PrimState m) (Word, a)
-      -> m (v (Word, a))
+      -> v (b, a)
+      -> G.Mutable v (PrimState m) (b, a)
+      -> m (v (b, a))
     gogo slices buffer bufferNew
       | G.basicLength slices == 0
       = pure G.empty
