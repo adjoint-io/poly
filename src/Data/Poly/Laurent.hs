@@ -20,9 +20,8 @@ module Data.Poly.Laurent
   , monomial
   , scale
   , pattern X
-  , eval
-  , deriv
-  , integral
+  , (^-)
+  -- , eval
   ) where
 
 import Data.Poly.Internal.Laurent

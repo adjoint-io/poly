@@ -27,24 +27,23 @@ module Data.Poly.Internal.Laurent
   , monomial
   , scale
   , pattern X
-  , eval
-  , deriv
-  , integral
+  , (^-)
+  -- , eval
   -- * Semiring interface
   , toPoly'
   , monomial'
   , scale'
   , pattern X'
-  , eval'
-  , deriv'
+  , (-^)
+  -- , eval'
   ) where
 
 import Control.DeepSeq (NFData)
-import Control.Monad
-import Control.Monad.Primitive
-import Control.Monad.ST
+import Control.Monad (forM_, when)
+import Control.Monad.Primitive (PrimMonad, PrimState)
+import Control.Monad.ST (runST)
 import Data.List (intersperse)
-import Data.Ord
+import Data.Ord (comparing)
 import Data.Semiring (Semiring(..))
 import qualified Data.Semiring as Semiring
 import qualified Data.Vector as V
@@ -52,13 +51,13 @@ import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as MG
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector.Algorithms.Tim as Tim
-import GHC.Exts
+import GHC.Exts (IsList(..))
 #if !MIN_VERSION_semirings(0,4,0)
 import Data.Semigroup
 import Numeric.Natural
 #endif
 
--- | Polynomials of one variable with coefficients from @a@,
+-- | Laurent polynomials of one variable with coefficients from @a@,
 -- backed by a 'G.Vector' @v@ (boxed, unboxed, storable, etc.).
 --
 -- Use pattern 'X' for construction:
@@ -68,8 +67,13 @@ import Numeric.Natural
 -- >>> (X + 1) * (X - 1) :: UPoly Int
 -- 1 * X^2 + (-1)
 --
--- Polynomials are stored normalized, without
--- zero coefficients, so 0 * 'X' + 1 equals to 1.
+-- Use '^-' to invert pattern 'X':
+--
+-- >>> X^-1 :: UPoly Int
+-- 1 * X^-1
+--
+-- Laurent polynomials are stored normalized, without
+-- zero coefficients, so 0 * 'X^-1' + 1 equals to 1.
 --
 -- 'Ord' instance does not make much sense mathematically,
 -- it is defined only for the sake of 'Data.Set.Set', 'Data.Map.Map', etc.
@@ -81,8 +85,8 @@ newtype Poly v a = Poly
   }
 
 deriving instance Eq     (v (Int, a)) => Eq     (Poly v a)
-deriving instance Ord    (v (Int, a)) => Ord    (Poly v a)
 deriving instance NFData (v (Int, a)) => NFData (Poly v a)
+deriving instance Ord    (v (Int, a)) => Ord    (Poly v a)
 
 instance (Eq a, Semiring a, G.Vector v (Int, a)) => IsList (Poly v a) where
   type Item (Poly v a) = (Int, a)
@@ -102,21 +106,21 @@ instance (Show a, G.Vector v (Int, a)) => Show (Poly v a) where
     where
       showCoeff 0 c = showsPrec 7 c
       showCoeff 1 c = showsPrec 7 c . showString " * X"
-      showCoeff i c = showsPrec 7 c . showString " * X^" . showsPrec 7 i
+      showCoeff i c = showsPrec 7 c . showString " * X^" . showsPrec 6 i
 
--- | Polynomials backed by boxed vectors.
+-- | Laurent polynomials backed by boxed vectors.
 type VPoly = Poly V.Vector
 
--- | Polynomials backed by unboxed vectors.
+-- | Laurent polynomials backed by unboxed vectors.
 type UPoly = Poly U.Vector
 
 -- | Make 'Poly' from a list of (power, coefficient) pairs.
 -- (first element corresponds to a constant term).
 --
 -- >>> :set -XOverloadedLists
--- >>> toPoly [(0,1),(1,2),(2,3)] :: VPoly Integer
--- 3 * X^2 + 2 * X + 1
--- >>> S.toPoly [(0,0),(1,0),(2,0)] :: UPoly Int
+-- >>> toPoly [(0,1),(-1,2),(-2,3)] :: VPoly Integer
+-- 1 + 2 * X^-1 + 3 * X^-2
+-- >>> toPoly [(0,0),(-1,0),(-2,0)] :: UPoly Int
 -- 0
 toPoly :: (Eq a, Num a, G.Vector v (Int, a)) => v (Int, a) -> Poly v a
 toPoly = Poly . normalize (/= 0) (+)
@@ -124,10 +128,10 @@ toPoly = Poly . normalize (/= 0) (+)
 toPoly' :: (Eq a, Semiring a, G.Vector v (Int, a)) => v (Int, a) -> Poly v a
 toPoly' = Poly . normalize (/= zero) plus
 
--- | Return a leading power and coefficient of a non-zero polynomial.
+-- | Return a leading power and coefficient of a non-zero Laurent polynomial.
 --
--- >>> leading ((2 * X + 1) * (2 * X^2 - 1) :: UPoly Int)
--- Just (3,4)
+-- >>> leading ((2 * X^-1 + 1) * (2 * X^-2 - 1) :: UPoly Int)
+-- Just (0,-1)
 -- >>> leading (0 :: UPoly Int)
 -- Nothing
 leading :: G.Vector v (Int, a) => Poly v a -> Maybe (Int, a)
@@ -355,10 +359,10 @@ scaleInternal p mul yp yc (Poly xs) = runST $ do
   fmap Poly $ G.unsafeFreeze $ MG.basicUnsafeSlice 0 len zs
 {-# INLINE scaleInternal #-}
 
--- | Multiply a polynomial by a monomial, expressed as a power and a coefficient.
+-- | Multiply a Laurent polynomial by a Laurent monomial, expressed as a power and a coefficient.
 --
--- >>> scale 2 3 (X^2 + 1) :: UPoly Int
--- 3 * X^4 + 3 * X^2
+-- >>> scale (-2) 3 (X^-2 + 1) :: UPoly Int
+-- 3 * X^-2 + 3 * X^-4
 scale :: (Eq a, Num a, G.Vector v (Int, a)) => Int -> a -> Poly v a -> Poly v a
 scale = scaleInternal (/= 0) (*)
 
@@ -437,7 +441,7 @@ convolution p add mult xs ys
         gogo slicesNew' bufferNew' buffer'
 {-# INLINE convolution #-}
 
--- | Create a monomial from a power and a coefficient.
+-- | Create a Laurent monomial from a power and a coefficient.
 monomial :: (Eq a, Num a, G.Vector v (Int, a)) => Int -> a -> Poly v a
 monomial _ 0 = Poly G.empty
 monomial p c = Poly $ G.singleton (p, c)
@@ -447,10 +451,10 @@ monomial' p c
   | c == zero = Poly G.empty
   | otherwise = Poly $ G.singleton (p, c)
 
-data Strict3 a b c = Strict3 !a !b !c
+-- data Strict3 a b c = Strict3 !a !b !c
 
-fst3 :: Strict3 a b c -> a
-fst3 (Strict3 a _ _) = a
+-- fst3 :: Strict3 a b c -> a
+-- fst3 (Strict3 a _ _) = a
 
 -- | Evaluate at a given point.
 --
@@ -458,39 +462,21 @@ fst3 (Strict3 a _ _) = a
 -- 10
 -- >>> eval (X^2 + 1 :: VPoly (UPoly Int)) (X + 1)
 -- 1 * X^2 + 2 * X + 2
-eval :: (Num a, G.Vector v (Int, a)) => Poly v a -> a -> a
-eval (Poly cs) x = fst3 $ G.foldl' go (Strict3 0 0 1) cs
-  where
-    go (Strict3 acc q xq) (p, c) =
-      let xp = xq * x ^ (p - q) in
-        Strict3 (acc + c * xp) p xp
-{-# INLINE eval #-}
+-- eval :: (Num a, G.Vector v (Int, a)) => Poly v a -> a -> a
+-- eval (Poly cs) x = fst3 $ G.foldl' go (Strict3 0 0 1) cs
+--   where
+--     go (Strict3 acc q xq) (p, c) =
+--       let xp = xq * x ^ (p - q) in
+--         Strict3 (acc + c * xp) p xp
+-- {-# INLINE eval #-}
 
-eval' :: (Semiring a, G.Vector v (Int, a)) => Poly v a -> a -> a
-eval' (Poly cs) x = fst3 $ G.foldl' go (Strict3 zero 0 one) cs
-  where
-    go (Strict3 acc q xq) (p, c) =
-      let xp = xq `times` (if p == q then one else x Semiring.^ (p - q)) in
-        Strict3 (acc `plus` c `times` xp) p xp
-{-# INLINE eval' #-}
-
--- | Take a derivative.
---
--- >>> deriv (X^3 + 3 * X) :: UPoly Int
--- 3 * X^2 + 3
-deriv :: (Eq a, Num a, G.Vector v (Int, a)) => Poly v a -> Poly v a
-deriv (Poly xs) = Poly $ derivPoly
-  (/= 0)
-  (\p c -> fromIntegral p * c)
-  xs
-{-# INLINE deriv #-}
-
-deriv' :: (Eq a, Semiring a, G.Vector v (Int, a)) => Poly v a -> Poly v a
-deriv' (Poly xs) = Poly $ derivPoly
-  (/= zero)
-  (\p c -> fromNatural (fromIntegral p) `times` c)
-  xs
-{-# INLINE deriv' #-}
+-- eval' :: (Semiring a, G.Vector v (Int, a)) => Poly v a -> a -> a
+-- eval' (Poly cs) x = fst3 $ G.foldl' go (Strict3 zero 0 one) cs
+--   where
+--     go (Strict3 acc q xq) (p, c) =
+--       let xp = xq `times` (if p == q then one else x Semiring.^ (p - q)) in
+--         Strict3 (acc `plus` c `times` xp) p xp
+-- {-# INLINE eval' #-}
 
 #if !MIN_VERSION_semirings(0,4,0)
 fromNatural :: Semiring a => Natural -> a
@@ -503,43 +489,7 @@ instance Semiring a => Semigroup (Add' a) where
   Add' a <> Add' b = Add' (a `plus` b)
 #endif
 
-derivPoly
-  :: G.Vector v (Int, a)
-  => (a -> Bool)
-  -> (Int -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-derivPoly p mul xs
-  | G.null xs = G.empty
-  | otherwise = runST $ do
-    let lenXs = G.basicLength xs
-    zs <- MG.basicUnsafeNew lenXs
-    let go ix iz
-          | ix == lenXs = pure iz
-          | (xp, xc) <- G.unsafeIndex xs ix
-          = do
-            let zc = xp `mul` xc
-            if xp > 0 && p zc then do
-              MG.unsafeWrite zs iz (xp - 1, zc)
-              go (ix + 1) (iz + 1)
-            else
-              go (ix + 1) iz
-    lenZs <- go 0 0
-    G.unsafeFreeze $ MG.basicUnsafeSlice 0 lenZs zs
-{-# INLINE derivPoly #-}
-
--- | Compute an indefinite integral of a polynomial,
--- setting constant term to zero.
---
--- >>> integral (3 * X^2 + 3) :: UPoly Double
--- 1.0 * X^3 + 3.0 * X
-integral :: (Eq a, Fractional a, G.Vector v (Int, a)) => Poly v a -> Poly v a
-integral (Poly xs)
-  = Poly
-  $ G.map (\(p, c) -> (p + 1, c / (fromIntegral p + 1))) xs
-{-# INLINE integral #-}
-
--- | Create an identity polynomial.
+-- | Create an identity Laurent polynomial.
 pattern X :: (Eq a, Num a, G.Vector v (Int, a), Eq (v (Int, a))) => Poly v a
 pattern X <- ((==) var -> True)
   where X = var
@@ -550,7 +500,6 @@ var
   | otherwise     = Poly $ G.singleton (1, 1)
 {-# INLINE var #-}
 
--- | Create an identity polynomial.
 pattern X' :: (Eq a, Semiring a, G.Vector v (Int, a), Eq (v (Int, a))) => Poly v a
 pattern X' <- ((==) var' -> True)
   where X' = var'
@@ -560,3 +509,16 @@ var'
   | (one :: a) == zero = Poly G.empty
   | otherwise          = Poly $ G.singleton (1, one)
 {-# INLINE var' #-}
+
+-- | Exponentiation of an identity Laurent polynomial to a negative integer.
+infixr 8 ^-
+(^-) :: (Eq a, Num a, G.Vector v (Int, a), Eq (v (Int, a))) => Poly v a -> Int -> Poly v a
+X ^- n = monomial (-n) 1
+_ ^- _ = error "(^-): not the identity Laurent polynomial"
+{-# INLINE (^-) #-}
+
+infixr 8 -^
+(-^) :: (Eq a, Semiring a, G.Vector v (Int, a), Eq (v (Int, a))) => Poly v a -> Int -> Poly v a
+X' -^ n = monomial' (-n) one
+_  -^ _ = error "(-^): not the identity Laurent polynomial"
+{-# INLINE (-^) #-}
