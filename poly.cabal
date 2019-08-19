@@ -28,10 +28,15 @@ library
     Data.Poly.Semiring
     Data.Poly.Sparse
     Data.Poly.Sparse.Semiring
+    Data.Poly.Laurent
+    Data.Poly.Laurent.Semiring
   other-modules:
     Data.Poly.Internal.Dense
     Data.Poly.Internal.Dense.Fractional
     Data.Poly.Internal.Dense.GcdDomain
+    Data.Poly.Internal.Laurent
+    Data.Poly.Internal.Laurent.Fractional
+    Data.Poly.Internal.Laurent.GcdDomain
     Data.Poly.Internal.PolyOverFractional
     Data.Poly.Internal.Sparse
     Data.Poly.Internal.Sparse.Fractional

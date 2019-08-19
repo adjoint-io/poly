@@ -1,0 +1,78 @@
+-- |
+-- Module:     Data.Poly.Internal.Laurent.Fractional
+-- Copyright:  (c) 2019 Adjoint Inc
+-- Licence:    BSD3
+-- Maintainer: Adjoint Inc <info@adjoint.io>
+--
+-- GcdDomain for Fractional underlying
+--
+
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms            #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE ViewPatterns               #-}
+
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
+#if MIN_VERSION_semirings(0,4,2)
+
+module Data.Poly.Internal.Laurent.Fractional
+  ( fractionalGcd
+  ) where
+
+import Prelude hiding (quotRem, rem, gcd)
+import Control.Arrow
+import Control.Exception
+import Data.Euclidean
+import qualified Data.Semiring as Semiring
+import qualified Data.Vector.Generic as G
+
+import Data.Poly.Internal.Laurent
+import Data.Poly.Internal.Laurent.GcdDomain ()
+
+instance (Eq a, Eq (v (Int, a)), Semiring.Ring a, GcdDomain a, Fractional a, G.Vector v (Int, a)) => Euclidean (Poly v a) where
+  degree (Poly xs)
+    | G.null xs = 0
+    | otherwise = 1 + fromIntegral (fst (G.last xs))
+
+  quotRem = quotientRemainder
+
+quotientRemainder
+  :: (Eq a, Fractional a, G.Vector v (Int, a))
+  => Poly v a
+  -> Poly v a
+  -> (Poly v a, Poly v a)
+quotientRemainder ts ys = case leading ys of
+  Nothing -> throw DivideByZero
+  Just (yp, yc) -> go ts
+    where
+      go xs = case leading xs of
+        Nothing -> (0, 0)
+        Just (xp, xc) -> case xp `compare` yp of
+          LT -> (0, xs)
+          EQ -> (zs, xs')
+          GT -> first (+ zs) $ go xs'
+          where
+            zs = Poly $ G.singleton (xp - yp, xc / yc)
+            xs' = xs - zs * ys
+
+fractionalGcd
+  :: (Eq a, Fractional a, G.Vector v (Int, a))
+  => Poly v a
+  -> Poly v a
+  -> Poly v a
+fractionalGcd xs ys
+  | G.null (unPoly ys) = xs
+  | otherwise = fractionalGcd ys $ snd $ quotientRemainder xs ys
+{-# INLINE fractionalGcd #-}
+
+#else
+
+module Data.Poly.Internal.Laurent.Fractional () where
+
+#endif
