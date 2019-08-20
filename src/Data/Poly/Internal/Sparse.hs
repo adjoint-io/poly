@@ -150,6 +150,13 @@ leading (Poly v)
   -> v (Word, a)
   -> v (Word, a)
   #-}
+{-# SPECIALISE normalize
+  :: G.Vector v (Int, a)
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> v (Int, a)
+  #-}
 normalize
   :: (Num b, Ord b, G.Vector v (b, a))
   => (a -> Bool)
@@ -168,6 +175,13 @@ normalize p add vs
   => (a -> Bool)
   -> (a -> a -> a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+{-# SPECIALISE normalizeM
+  :: (PrimMonad m, G.Vector v (Int, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> G.Mutable v (PrimState m) (Int, a)
   -> m Int
   #-}
 normalizeM
@@ -246,6 +260,14 @@ instance (Eq a, Semiring.Ring a, G.Vector v (Word, a)) => Semiring.Ring (Poly v 
   -> v (Word, a)
   -> v (Word, a)
   #-}
+{-# SPECIALISE plusPoly
+  :: G.Vector v (Int, a)
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> v (Int, a)
+  -> v (Int, a)
+  #-}
 plusPoly
   :: (Num b, Ord b, G.Vector v (b, a))
   => (a -> Bool)
@@ -266,6 +288,15 @@ plusPoly p add xs ys = runST $ do
   -> v (Word, a)
   -> v (Word, a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+{-# SPECIALISE plusPolyM
+  :: (PrimMonad m, G.Vector v (Int, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> v (Int, a)
+  -> G.Mutable v (PrimState m) (Int, a)
   -> m Int
   #-}
 plusPolyM
@@ -320,6 +351,15 @@ plusPolyM p add xs ys zs = go 0 0 0
   -> v (Word, a)
   -> v (Word, a)
   #-}
+{-# SPECIALISE minusPoly
+  :: G.Vector v (Int, a)
+  => (a -> Bool)
+  -> (a -> a)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> v (Int, a)
+  -> v (Int, a)
+  #-}
 minusPoly
   :: (Num b, Ord b, G.Vector v (b, a))
   => (a -> Bool)
@@ -372,6 +412,15 @@ minusPoly p neg sub xs ys = runST $ do
   -> v (Word, a)
   -> (Word, a)
   -> G.Mutable v (PrimState m) (Word, a)
+  -> m Int
+  #-}
+{-# SPECIALISE scaleM
+  :: (PrimMonad m, G.Vector v (Int, a))
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> (Int, a)
+  -> G.Mutable v (PrimState m) (Int, a)
   -> m Int
   #-}
 scaleM
@@ -431,6 +480,16 @@ scale' = scaleInternal (/= zero) times
   -> v (Word, a)
   -> v (Word, a)
   -> v (Word, a)
+  #-}
+{-# SPECIALISE convolution
+  :: forall v a .
+     G.Vector v (Int, a)
+  => (a -> Bool)
+  -> (a -> a -> a)
+  -> (a -> a -> a)
+  -> v (Int, a)
+  -> v (Int, a)
+  -> v (Int, a)
   #-}
 convolution
   :: forall v a b .

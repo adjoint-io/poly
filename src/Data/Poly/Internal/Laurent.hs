@@ -37,10 +37,9 @@ module Data.Poly.Internal.Laurent
   ) where
 
 import Control.DeepSeq (NFData)
-import Control.Monad.Primitive (PrimMonad, PrimState)
 import Control.Monad.ST (runST)
 import Data.List (intersperse)
-import Data.Poly.Internal.Sparse (convolution, minusPoly, normalize, normalizeM, plusPoly, plusPolyM, scaleM)
+import Data.Poly.Internal.Sparse (convolution, minusPoly, normalize, plusPoly, scaleM)
 import Data.Semiring (Semiring(..))
 import qualified Data.Semiring as Semiring (Ring(..))
 import qualified Data.Vector as V
@@ -135,22 +134,6 @@ leading (Poly v)
   | G.null v  = Nothing
   | otherwise = Just (G.last v)
 
-{-# SPECIALISE normalize
-  :: G.Vector v (Int, a)
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-  #-}
-
-{-# SPECIALISE normalizeM
-  :: (PrimMonad m, G.Vector v (Int, a))
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> G.Mutable v (PrimState m) (Int, a)
-  -> m Int
-  #-}
-
 -- | Note that 'abs' = 'id' and 'signum' = 'const' 1.
 instance (Eq a, Num a, G.Vector v (Int, a)) => Num (Poly v a) where
   Poly xs + Poly ys = Poly $ plusPoly (/= 0) (+) xs ys
@@ -191,45 +174,6 @@ instance (Eq a, Semiring a, G.Vector v (Int, a)) => Semiring (Poly v a) where
 instance (Eq a, Semiring.Ring a, G.Vector v (Int, a)) => Semiring.Ring (Poly v a) where
   negate (Poly xs) = Poly $ G.map (fmap Semiring.negate) xs
 
-{-# SPECIALISE plusPoly
-  :: G.Vector v (Int, a)
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-  -> v (Int, a)
-  #-}
-
-{-# SPECIALISE plusPolyM
-  :: (PrimMonad m, G.Vector v (Int, a))
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-  -> G.Mutable v (PrimState m) (Int, a)
-  -> m Int
-  #-}
-
-{-# SPECIALISE minusPoly
-  :: G.Vector v (Int, a)
-  => (a -> Bool)
-  -> (a -> a)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-  -> v (Int, a)
-  #-}
-
-{-# SPECIALISE scaleM
-  :: (PrimMonad m, G.Vector v (Int, a))
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> (Int, a)
-  -> G.Mutable v (PrimState m) (Int, a)
-  -> m Int
-  #-}
-
 scaleInternal
   :: G.Vector v (Int, a)
   => (a -> Bool)
@@ -253,17 +197,6 @@ scale = scaleInternal (/= 0) (*)
 
 scale' :: (Eq a, Semiring a, G.Vector v (Int, a)) => Int -> a -> Poly v a -> Poly v a
 scale' = scaleInternal (/= zero) times
-
-{-# SPECIALISE convolution
-  :: forall v a.
-     G.Vector v (Int, a)
-  => (a -> Bool)
-  -> (a -> a -> a)
-  -> (a -> a -> a)
-  -> v (Int, a)
-  -> v (Int, a)
-  -> v (Int, a)
-  #-}
 
 -- | Create a Laurent monomial from a power and a coefficient.
 monomial :: (Eq a, Num a, G.Vector v (Int, a)) => Int -> a -> Poly v a
