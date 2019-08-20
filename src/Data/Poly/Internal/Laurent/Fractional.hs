@@ -22,14 +22,15 @@
 #if MIN_VERSION_semirings(0,4,2)
 
 module Data.Poly.Internal.Laurent.Fractional
-  ( fractionalGcd
+  ( eval
+  , fractionalGcd
   ) where
 
-import Prelude hiding (quotRem, rem, gcd)
-import Control.Arrow
-import Control.Exception
-import Data.Euclidean
-import qualified Data.Semiring as Semiring
+import Prelude
+import Control.Arrow (first)
+import Control.Exception (ArithException(..), throw)
+import Data.Euclidean (Euclidean(..), GcdDomain(..))
+import qualified Data.Semiring as Semiring (Ring)
 import qualified Data.Vector.Generic as G
 
 import Data.Poly.Internal.Laurent
@@ -70,6 +71,26 @@ fractionalGcd xs ys
   | G.null (unPoly ys) = xs
   | otherwise = fractionalGcd ys $ snd $ quotientRemainder xs ys
 {-# INLINE fractionalGcd #-}
+
+data Strict3 a b c = Strict3 !a !b !c
+
+fst3 :: Strict3 a b c -> a
+fst3 (Strict3 a _ _) = a
+
+-- | Evaluate at a given point.
+--
+-- >>> eval (X^2 + 1 :: UPoly Int) 3
+-- 10
+-- >>> eval (X^2 + 1 :: VPoly (UPoly Int)) (X + 1)
+-- 1 * X^2 + 2 * X + 2
+eval :: (Fractional a, G.Vector v (Int, a)) => Poly v a -> a -> a
+eval (Poly cs) x = fst3 $ G.foldl' go (Strict3 0 0 1) cs
+  where
+    go (Strict3 acc q xq) (p, c) = let xp = xq * pow (p - q)
+      in Strict3 (acc + c * xp) p xp
+      where
+        pow n = if n < 0 then recip x ^ negate n else x ^ n
+{-# INLINE eval #-}
 
 #else
 

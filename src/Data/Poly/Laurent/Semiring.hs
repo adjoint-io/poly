@@ -22,7 +22,7 @@ module Data.Poly.Laurent.Semiring
   , scale
   , pattern X
   , (^-)
-  -- , eval
+  , eval
   ) where
 
 import Data.Semiring (Semiring)
@@ -30,7 +30,7 @@ import Data.Vector.Generic (Vector)
 
 import Data.Poly.Internal.Laurent (Poly(..), VPoly, UPoly, leading, (-^))
 import qualified Data.Poly.Internal.Laurent as Laurent
-import Data.Poly.Internal.Laurent.Fractional ()
+import Data.Poly.Internal.Laurent.Fractional (eval)
 import Data.Poly.Internal.Laurent.GcdDomain ()
 
 -- | Make 'Poly' from a list of (power, coefficient) pairs.

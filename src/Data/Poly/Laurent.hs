@@ -21,9 +21,10 @@ module Data.Poly.Laurent
   , scale
   , pattern X
   , (^-)
-  -- , eval
+  -- * Fractional coefficients
+  , eval
   ) where
 
 import Data.Poly.Internal.Laurent
-import Data.Poly.Internal.Laurent.Fractional ()
+import Data.Poly.Internal.Laurent.Fractional (eval)
 import Data.Poly.Internal.Laurent.GcdDomain ()

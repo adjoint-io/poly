@@ -24,12 +24,12 @@ module Data.Poly.Internal.Laurent.GcdDomain
 
 #if MIN_VERSION_semirings(0,4,2)
 
-import Prelude hiding (gcd, lcm, (^))
-import Control.Exception
-import Data.Euclidean
-import Data.Maybe
+import Prelude hiding (gcd, lcm)
+import Control.Exception (ArithException(..), throw)
+import Data.Euclidean (GcdDomain(..))
+import Data.Maybe (fromMaybe)
 import Data.Semiring (Semiring(..))
-import qualified Data.Semiring as Semiring
+import qualified Data.Semiring as Semiring (Ring(..))
 import qualified Data.Vector.Generic as G
 
 import Data.Poly.Internal.Laurent

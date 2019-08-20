@@ -28,14 +28,12 @@ module Data.Poly.Internal.Laurent
   , scale
   , pattern X
   , (^-)
-  -- , eval
   -- * Semiring interface
   , toPoly'
   , monomial'
   , scale'
   , pattern X'
   , (-^)
-  -- , eval'
   ) where
 
 import Control.DeepSeq (NFData)
@@ -44,7 +42,7 @@ import Control.Monad.ST (runST)
 import Data.List (intersperse)
 import Data.Poly.Internal.Sparse (convolution, minusPoly, normalize, normalizeM, plusPoly, plusPolyM, scaleM)
 import Data.Semiring (Semiring(..))
-import qualified Data.Semiring as Semiring
+import qualified Data.Semiring as Semiring (Ring(..))
 import qualified Data.Vector as V
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as MG
@@ -277,33 +275,6 @@ monomial' p c
   | c == zero = Poly G.empty
   | otherwise = Poly $ G.singleton (p, c)
 
--- data Strict3 a b c = Strict3 !a !b !c
-
--- fst3 :: Strict3 a b c -> a
--- fst3 (Strict3 a _ _) = a
-
--- | Evaluate at a given point.
---
--- >>> eval (X^2 + 1 :: UPoly Int) 3
--- 10
--- >>> eval (X^2 + 1 :: VPoly (UPoly Int)) (X + 1)
--- 1 * X^2 + 2 * X + 2
--- eval :: (Num a, G.Vector v (Int, a)) => Poly v a -> a -> a
--- eval (Poly cs) x = fst3 $ G.foldl' go (Strict3 0 0 1) cs
---   where
---     go (Strict3 acc q xq) (p, c) =
---       let xp = xq * x ^ (p - q) in
---         Strict3 (acc + c * xp) p xp
--- {-# INLINE eval #-}
-
--- eval' :: (Semiring a, G.Vector v (Int, a)) => Poly v a -> a -> a
--- eval' (Poly cs) x = fst3 $ G.foldl' go (Strict3 zero 0 one) cs
---   where
---     go (Strict3 acc q xq) (p, c) =
---       let xp = xq `times` (if p == q then one else x Semiring.^ (p - q)) in
---         Strict3 (acc `plus` c `times` xp) p xp
--- {-# INLINE eval' #-}
-
 #if !MIN_VERSION_semirings(0,4,0)
 fromNatural :: Semiring a => Natural -> a
 fromNatural 0 = zero
@@ -326,7 +297,6 @@ var
   | otherwise     = Poly $ G.singleton (1, 1)
 {-# INLINE var #-}
 
--- | Create an identity polynomial.
 pattern X' :: (Eq a, Semiring a, G.Vector v (Int, a), Eq (v (Int, a))) => Poly v a
 pattern X' <- ((==) var' -> True)
   where X' = var'
