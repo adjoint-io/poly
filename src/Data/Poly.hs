@@ -7,10 +7,8 @@
 -- Dense polynomials and a 'Num'-based interface.
 --
 
-{-# LANGUAGE CPP                        #-}
-{-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE PatternSynonyms            #-}
+{-# LANGUAGE CPP             #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Data.Poly
   ( Poly
@@ -27,17 +25,18 @@ module Data.Poly
   , deriv
   , integral
 #if MIN_VERSION_semirings(0,4,2)
+  -- * Polynomials over 'Field'
+  , PolyOverField(..)
   , gcdExt
-  -- * Fractional coefficients
-  , PolyOverFractional(..)
-  , fractionalGcdExt
-  , scaleMonic
+  , PolyOverFractional
+  , pattern PolyOverFractional
+  , unPolyOverFractional
 #endif
   ) where
 
 import Data.Poly.Internal.Dense
 #if MIN_VERSION_semirings(0,4,2)
-import Data.Poly.Internal.Dense.Fractional (fractionalGcdExt, scaleMonic)
+import Data.Poly.Internal.Dense.Field (gcdExt)
 import Data.Poly.Internal.Dense.GcdDomain ()
-import Data.Poly.Internal.PolyOverFractional
+import Data.Poly.Internal.PolyOverField
 #endif

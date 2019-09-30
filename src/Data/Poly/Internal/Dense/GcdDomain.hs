@@ -9,11 +9,9 @@
 
 {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PatternSynonyms            #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE ViewPatterns               #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -28,18 +26,16 @@ import Control.Monad
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Euclidean
-import Data.Semiring (Semiring(..), isZero)
-import qualified Data.Semiring as Semiring
+import Data.Semiring (Semiring(..), Ring(), isZero, minus)
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as MG
 
 import Data.Poly.Internal.Dense
 
--- | Consider using 'Data.Poly.Semiring.PolyOverFractional' wrapper,
+-- | Consider using 'Data.Poly.Semiring.PolyOverField' wrapper,
 -- which provides a much faster implementation of
--- 'Data.Euclidean.gcd' for 'Fractional'
--- coefficients.
-instance (Eq a, Semiring.Ring a, GcdDomain a, Eq (v a), G.Vector v a) => GcdDomain (Poly v a) where
+-- 'Data.Euclidean.gcd' for polynomials over 'Field'.
+instance (Eq a, Ring a, GcdDomain a, Eq (v a), G.Vector v a) => GcdDomain (Poly v a) where
   divide (Poly xs) (Poly ys) =
     toPoly' <$> quotient xs ys
 
@@ -50,7 +46,7 @@ instance (Eq a, Semiring.Ring a, GcdDomain a, Eq (v a), G.Vector v a) => GcdDoma
   {-# INLINE gcd #-}
 
 gcdNonEmpty
-  :: (Eq a, Semiring.Ring a, GcdDomain a, G.Vector v a)
+  :: (Eq a, Ring a, GcdDomain a, G.Vector v a)
   => v a
   -> v a
   -> v a
@@ -62,7 +58,7 @@ gcdNonEmpty xs ys = runST $ do
     ys' <- G.thaw ys
     zs' <- gcdM xs' ys'
 
-    let lenZs = MG.basicLength zs'
+    let lenZs = MG.length zs'
         go acc 0 = pure acc
         go acc n = do
           t <- MG.unsafeRead zs' (n - 1)
@@ -80,7 +76,7 @@ gcdNonEmpty xs ys = runST $ do
     G.unsafeFreeze zs'
 
 gcdM
-  :: (PrimMonad m, Eq a, Semiring.Ring a, GcdDomain a, G.Vector v a)
+  :: (PrimMonad m, Eq a, Ring a, GcdDomain a, G.Vector v a)
   => G.Mutable v (PrimState m) a
   -> G.Mutable v (PrimState m) a
   -> m (G.Mutable v (PrimState m) a)
@@ -88,8 +84,8 @@ gcdM xs ys
   | MG.null xs = pure ys
   | MG.null ys = pure xs
   | otherwise = do
-  let lenXs = MG.basicLength xs
-      lenYs = MG.basicLength ys
+  let lenXs = MG.length xs
+      lenYs = MG.length ys
   xLast <- MG.unsafeRead xs (lenXs - 1)
   yLast <- MG.unsafeRead ys (lenYs - 1)
   let z = xLast `lcm` yLast
@@ -105,7 +101,7 @@ gcdM xs ys
       x <- MG.unsafeRead xs i
       MG.unsafeModify
         ys
-        (\y -> (y `times` zy) `plus` Semiring.negate (x `times` zx))
+        (\y -> (y `times` zy) `minus` x `times` zx)
         (i + lenYs - lenXs)
     forM_ [0 .. lenYs - lenXs - 1] $
       MG.unsafeModify ys (`times` zy)
@@ -116,7 +112,7 @@ gcdM xs ys
       y <- MG.unsafeRead ys i
       MG.unsafeModify
         xs
-        (\x -> (x `times` zx) `plus` Semiring.negate (y `times` zy))
+        (\x -> (x `times` zx) `minus` y `times` zy)
         (i + lenXs - lenYs)
     forM_ [0 .. lenXs - lenYs - 1] $
       MG.unsafeModify xs (`times` zx)
@@ -128,7 +124,7 @@ isZeroM
   :: (Eq a, Semiring a, PrimMonad m, G.Vector v a)
   => G.Mutable v (PrimState m) a
   -> m Bool
-isZeroM xs = go (MG.basicLength xs)
+isZeroM xs = go (MG.length xs)
   where
     go 0 = pure True
     go n = do
@@ -137,20 +133,20 @@ isZeroM xs = go (MG.basicLength xs)
 {-# INLINE isZeroM #-}
 
 quotient
-  :: (Eq a, Eq (v a), Semiring.Ring a, GcdDomain a, G.Vector v a)
+  :: (Eq a, Eq (v a), Ring a, GcdDomain a, G.Vector v a)
   => v a
   -> v a
   -> Maybe (v a)
 quotient xs ys
   | G.null ys = throw DivideByZero
   | G.null xs = Just xs
-  | G.basicLength xs < G.basicLength ys = Nothing
+  | G.length xs < G.length ys = Nothing
   | otherwise = runST $ do
-    let lenXs = G.basicLength xs
-        lenYs = G.basicLength ys
+    let lenXs = G.length xs
+        lenYs = G.length ys
         lenQs = lenXs - lenYs + 1
-    qs <- MG.basicUnsafeNew lenQs
-    rs <- MG.basicUnsafeNew lenXs
+    qs <- MG.unsafeNew lenQs
+    rs <- MG.unsafeNew lenXs
     G.unsafeCopy rs xs
 
     let go i
@@ -168,7 +164,7 @@ quotient xs ys
                 forM_ [0 .. lenYs - 1] $ \k -> do
                   MG.unsafeModify
                     rs
-                    (\c -> c `plus` (Semiring.negate $ q `times` G.unsafeIndex ys k))
+                    (\c -> c `minus` q `times` G.unsafeIndex ys k)
                     (i + k)
                 go (i - 1)
 

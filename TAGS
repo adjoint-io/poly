@@ -1,0 +1,522 @@
+
+./test/Sparse.hs,1058
+module SparseSparse9,10
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v (Word, a)) => Arbitrary (Poly v a)38,39
+  arbitrary arbitrary39,40
+  shrink shrink40,41
+newtype ShortPoly ShortPoly42,43
+newtype ShortPoly a = ShortPoly { unShortPoly unShortPoly42,43
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v (Word, a)) => Arbitrary (ShortPoly (Poly v a))53,54
+  arbitrary arbitrary54,55
+  shrink shrink55,56
+testSuite testSuite57,58
+lawsTests lawsTests69,70
+semiringTests semiringTests79,80
+ringTests ringTests90,91
+numTests numTests104,105
+euclideanTests euclideanTests117,118
+isListTests isListTests129,130
+showTests showTests140,141
+arithmeticTests arithmeticTests154,155
+addRef addRef167,168
+subRef subRef176,177
+mulRef mulRef185,186
+otherTests otherTests192,193
+otherTestGroup otherTestGroup203,204
+monomialRef monomialRef214,215
+evalTests evalTests217,218
+evalTestGroup evalTestGroup228,229
+derivTests derivTests254,255
+gcdExtTests gcdExtTests278,279
+sameUpToUnits sameUpToUnits291,292
+
+./test/Quaternion.hs,1776
+data Quaternion Quaternion31,32
+data Quaternion a = Quaternion Quaternion31,32
+instance Ring Ring a => Semiring (Quaternion a)34,35
+  zero zero35,36
+  one one36,37
+  plus plus37,38
+  times times39,40
+instance Ring Ring a => Ring (Quaternion a)46,47
+  negate negate47,48
+instance (R(Ring a, Num a) => Num (Quaternion a)50,51
+  (+(+)51,52
+  (-(-)52,53
+  (*(*)53,54
+  abs abs54,55
+  signum signum55,56
+  fromInteger fromInteger56,57
+instance Arbitrary Arbitrary a => Arbitrary (Quaternion a)58,59
+  arbitrary arbitrary59,60
+  shrink shrink60,61
+newtype instance instance62,63
+newtype instance MVector s (Quaternion a) = MV_Quaternion MV_Quaternion62,63
+newtype instance instance63,64
+newtype instance Vector    (Quaternion a) = V_Quaternion V_Quaternion63,64
+instance (U(Unbox a) => Unbox (Quaternion a)65,66
+instance (U(Unbox a) => M-MVector MVector (Quaternion a)67,68
+  basicLength basicLength80,81
+  basicUnsafeSlice basicUnsafeSlice81,82
+  basicOverlaps basicOverlaps82,83
+  basicUnsafeNew basicUnsafeNew83,84
+  basicInitialize basicInitialize84,85
+  basicUnsafeReplicate basicUnsafeReplicate85,86
+  basicUnsafeRead basicUnsafeRead86,87
+  basicUnsafeWrite basicUnsafeWrite87,88
+  basicClear basicClear88,89
+  basicSet basicSet89,90
+  basicUnsafeCopy basicUnsafeCopy90,91
+  basicUnsafeMove basicUnsafeMove91,92
+  basicUnsafeGrow basicUnsafeGrow92,93
+instance (U(Unbox a) => G-Vector Vector (Quaternion a)94,95
+  basicUnsafeFreeze basicUnsafeFreeze101,102
+  basicUnsafeThaw basicUnsafeThaw102,103
+  basicLength basicLength103,104
+  basicUnsafeSlice basicUnsafeSlice104,105
+  basicUnsafeIndexM basicUnsafeIndexM105,106
+  basicUnsafeCopy basicUnsafeCopy107,108
+  elemseq elemseq109,110
+
+./test/Laurent.hs,853
+module LaurentLaurent9,10
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v (Int, a)) => Arbitrary (Poly v a)32,33
+  arbitrary arbitrary33,34
+  shrink shrink34,35
+newtype ShortPoly ShortPoly36,37
+newtype ShortPoly a = ShortPoly { unShortPoly unShortPoly36,37
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v (Int, a)) => Arbitrary (ShortPoly (Poly v a))47,48
+  arbitrary arbitrary48,49
+  shrink shrink49,50
+testSuite testSuite51,52
+lawsTests lawsTests59,60
+semiringTests semiringTests69,70
+ringTests ringTests80,81
+numTests numTests94,95
+euclideanTests euclideanTests107,108
+isListTests isListTests119,120
+showTests showTests130,131
+arithmeticTests arithmeticTests144,145
+otherTests otherTests157,158
+otherTestGroup otherTestGroup168,169
+evalTests evalTests179,180
+evalTestGroup evalTestGroup189,190
+
+./test/Dense.hs,1195
+module DenseDense8,9
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v a) => Arbitrary (Poly v a)31,32
+  arbitrary arbitrary32,33
+  shrink shrink33,34
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v a) => Arbitrary (PolyOverField (Poly v a))36,37
+  arbitrary arbitrary37,38
+  shrink shrink38,39
+newtype ShortPoly ShortPoly41,42
+newtype ShortPoly a = ShortPoly { unShortPoly unShortPoly41,42
+instance (E(Eq a, Semiring a, Arbitrary a, G-Vector v a) => Arbitrary (ShortPoly (Poly v a))52,53
+  arbitrary arbitrary53,54
+  shrink shrink54,55
+testSuite testSuite56,57
+lawsTests lawsTests68,69
+semiringTests semiringTests78,79
+ringTests ringTests89,90
+numTests numTests103,104
+euclideanTests euclideanTests116,117
+isListTests isListTests129,130
+showTests showTests140,141
+arithmeticTests arithmeticTests154,155
+addRef addRef167,168
+subRef subRef172,173
+mulRef mulRef177,178
+otherTests otherTests183,184
+otherTestGroup otherTestGroup194,195
+monomialRef monomialRef205,206
+evalTests evalTests208,209
+evalTestGroup evalTestGroup219,220
+derivTests derivTests245,246
+gcdExtTests gcdExtTests269,270
+sameUpToUnits sameUpToUnits282,283
+
+./test/Main.hs,37
+module Main Main0,1
+main main8,9
+
+./bench/Bench.hs,38
+module Main Main2,3
+main main9,10
+
+./bench/LaurentBench.hs,242
+module LaurentBenchLaurentBench4,5
+benchSuite benchSuite12,13
+tabs tabs19,20
+vecs2 vecs222,23
+vecs3 vecs326,27
+benchAdd benchAdd30,31
+benchMul benchMul33,34
+benchEval benchEval36,37
+doBinOp doBinOp39,40
+doEval doEval46,47
+
+./bench/DenseBench.hs,1241
+module DenseBenchDenseBench5,6
+benchSuite benchSuite24,25
+benchAdd benchAdd41,42
+benchMul benchMul44,45
+benchEval benchEval47,48
+benchDeriv benchDeriv50,51
+benchIntegral benchIntegral53,54
+benchQuotRem benchQuotRem58,59
+benchGcd benchGcd61,62
+benchGcdExtRat benchGcdExtRat64,65
+benchGcdFracRat benchGcdFracRat67,68
+benchGcdExtM benchGcdExtM70,71
+benchGcdFracM benchGcdFracM73,74
+doBinOp doBinOp78,79
+doEval doEval86,87
+doDeriv doDeriv91,92
+doIntegral doIntegral97,98
+gen1 gen1105,106
+gen2 gen2108,109
+doQuotRem doQuotRem111,112
+doGcd doGcd118,119
+doGcdExt doGcdExt125,126
+doGcdFrac doGcdFrac132,133
+newtype Mod2 Mod2140,141
+newtype Mod2 = Mod2 { _getMod2 _getMod2140,141
+instance Num Num Mod2143,144
+  (+(+)144,145
+  (*(*)145,146
+  negate negate146,147
+  abs abs147,148
+  signum signum148,149
+  fromInteger fromInteger149,150
+instance Semiring Semiring Mod2151,152
+  plus plus152,153
+  times times153,154
+  fromNatural fromNatural154,155
+instance Ring Ring Mod2156,157
+  negate negate157,158
+instance GcdDomain GcdDomain Mod2159,160
+instance Euclidean Euclidean Mod2161,162
+  degree degree162,163
+  quotRem quotRem163,164
+instance Field Field Mod2167,168
+
+./bench/SparseBench.hs,377
+module SparseBenchSparseBench4,5
+benchSuite benchSuite12,13
+tabs tabs21,22
+vecs2 vecs224,25
+vecs2' vecs2'28,29
+vecs3 vecs332,33
+benchAdd benchAdd36,37
+benchMul benchMul39,40
+benchEval benchEval42,43
+benchDeriv benchDeriv45,46
+benchIntegral benchIntegral48,49
+doBinOp doBinOp51,52
+doEval doEval57,58
+doDeriv doDeriv60,61
+doIntegral doIntegral65,66
+
+./Setup.hs,15
+main main1,2
+
+./src/Data/Poly.hs,33
+module Data.PolyData.Poly12,13
+
+./src/Data/Poly/Laurent/Semiring.hs,165
+module Data.Poly.Laurent.SemiringData.Poly.Laurent.Semiring12,13
+toPoly toPoly43,44
+monomial monomial47,48
+scale scale54,55
+pattern X X58,59
+(^(^-)63,64
+
+./src/Data/Poly/Sparse/Semiring.hs,210
+module Data.Poly.Sparse.SemiringData.Poly.Sparse.Semiring13,14
+toPoly toPoly56,57
+monomial monomial60,61
+scale scale67,68
+pattern X X71,72
+eval eval80,81
+deriv deriv87,88
+integral integral96,97
+
+./src/Data/Poly/Internal/Laurent/GcdDomain.hs,271
+module Data.Poly.Internal.Laurent.GcdDomainData.Poly.Internal.Laurent.GcdDomain21,22
+instance (E(Eq a, Semiring-Ring a, GcdDomain a, Eq (v (Int, a)), G-Vector v (Int, a)) => GcdDomain (Poly v a)40,41
+  divide divide41,42
+  gcd gcd53,54
+gcdHelper gcdHelper68,69
+
+./src/Data/Poly/Internal/Laurent/Fractional.hs,542
+module Data.Poly.Internal.Laurent.FractionalData.Poly.Internal.Laurent.Fractional23,24
+instance (E(Eq a, Eq (v (Int, a)), Semiring-Ring a, GcdDomain a, Fractional a, G-Vector v (Int, a)) => Euclidean (Poly v a)38,39
+  degree degree39,40
+  quotRem quotRem43,44
+quotientRemainder quotientRemainder50,51
+fractionalGcd fractionalGcd69,70
+data Strict3 Strict374,75
+data Strict3 a b c = Strict3 Strict374,75
+fst3 fst376,77
+eval eval85,86
+module Data.Poly.Internal.Laurent.Fractional Data.Poly.Internal.Laurent.Fractional96,97
+
+./src/Data/Poly/Internal/Sparse/Field.hs,422
+module Data.Poly.Internal.Sparse.FieldData.Poly.Internal.Sparse.Field22,23
+type Field Field40,41
+instance (E(Eq a, Eq (v (Word, a)), Field a, G-Vector v (Word, a)) => Euclidean (Poly v a)43,44
+  degree degree44,45
+  quotRem quotRem48,49
+quotientRemainder quotientRemainder55,56
+gcdExt gcdExt83,84
+scaleMonic scaleMonic108,109
+module Data.Poly.Internal.Sparse.Field Data.Poly.Internal.Sparse.Field115,116
+
+./src/Data/Poly/Internal/Sparse/GcdDomain.hs,262
+module Data.Poly.Internal.Sparse.GcdDomainData.Poly.Internal.Sparse.GcdDomain19,20
+instance (E(Eq a, Ring a, GcdDomain a, Eq (v (Word, a)), G-Vector v (Word, a)) => GcdDomain (Poly v a)36,37
+  divide divide37,38
+  gcd gcd49,50
+gcdHelper gcdHelper64,65
+
+./src/Data/Poly/Internal/Sparse.hs,1980
+module Data.Poly.Internal.SparseData.Poly.Internal.Sparse19,20
+newtype Poly Poly92,93
+  { unPoly unPoly93,94
+instance (E(Eq a, Semiring a, G-Vector v (Word, a)) => IsList (Poly v a)102,103
+  type Item Item103,104
+  fromList fromList104,105
+  fromListN fromListN105,106
+  toList toList106,107
+instance (S(Show a, G-Vector v (Word, a)) => Show (Poly v a)108,109
+  showsPrec showsPrec109,110
+type VPoly VPoly123,124
+type UPoly UPoly126,127
+toPoly toPoly136,137
+toPoly' toPoly'139,140
+leading leading148,149
+normalize normalize173,174
+normalizeM normalizeM200,201
+instance (E(Eq a, Num a, G-Vector v (Word, a)) => Num (Poly v a)223,224
+  Poly Poly224,225
+  negate negate226,227
+  abs abs227,228
+  signum signum228,229
+  fromInteger fromInteger229,230
+  Poly Poly232,233
+instance (E(Eq a, Semiring a, G-Vector v (Word, a)) => Semiring (Poly v a)239,240
+  zero zero240,241
+  oneone241,242
+  plus plus244,245
+  times times245,246
+  fromNatural fromNatural252,253
+instance (E(Eq a, Ring a, G-Vector v (Word, a)) => Ring (Poly v a)259,260
+  negate negate260,261
+plusPoly plusPoly285,286
+plusPolyM plusPolyM317,318
+minusPoly minusPoly378,379
+scaleM scaleM441,442
+scaleInternal scaleInternal465,466
+scale scale475,476
+scale' scale'478,479
+convolution convolution510,511
+monomial monomial574,575
+monomial' monomial'578,579
+data Strict3 Strict3583,584
+data Strict3 a b c = Strict3 Strict3583,584
+fst3 fst3585,586
+eval eval594,595
+eval' eval'602,603
+deriv deriv614,615
+deriv' deriv'621,622
+fromNatural fromNatural629,630
+newtype Add' Add'633,634
+newtype Add' a = Add' { getAdd' getAdd'633,634
+instance Semiring Semiring a => Semigroup (Add' a)635,636
+  Add' Add'636,637
+derivPoly derivPoly645,646
+integral integral669,670
+integral' integral'676,677
+pattern X X684,685
+pattern X <- <-685,686
+var var688,689
+pattern X' X'695,696
+pattern X' <- <-696,697
+var' var'699,700
+
+./src/Data/Poly/Internal/Laurent.hs,1602
+module Data.Poly.Internal.LaurentData.Poly.Internal.Laurent19,20
+newtype Poly Poly75,76
+  { unPoly unPoly76,77
+instance (E(Eq a, Semiring a, G-Vector v (Int, a)) => IsList (Poly v a)85,86
+  type Item Item86,87
+  fromList fromList87,88
+  fromListN fromListN88,89
+  toList toList89,90
+instance (S(Show a, G-Vector v (Int, a)) => Show (Poly v a)91,92
+  showsPrec showsPrec92,93
+type VPoly VPoly106,107
+type UPoly UPoly109,110
+toPoly toPoly119,120
+toPoly' toPoly'122,123
+leading leading131,132
+instance (E(Eq a, Num a, G-Vector v (Int, a)) => Num (Poly v a)137,138
+  Poly Poly138,139
+  negate negate140,141
+  abs abs141,142
+  signum signum142,143
+  fromInteger fromInteger143,144
+  Poly Poly146,147
+instance (E(Eq a, Semiring a, G-Vector v (Int, a)) => Semiring (Poly v a)153,154
+  zero zero154,155
+  oneone155,156
+  plus plus158,159
+  times times159,160
+  fromNatural fromNatural166,167
+instance (E(Eq a, Semiring-Ring a, G-Vector v (Int, a)) => Semiring-Ring (Poly v a)173,174
+  negate negate174,175
+scaleInternal scaleInternal184,185
+scale scale194,195
+scale' scale'197,198
+monomial monomial201,202
+monomial' monomial'205,206
+fromNatural fromNatural211,212
+newtype Add' Add'215,216
+newtype Add' a = Add' { getAdd' getAdd'215,216
+instance Semiring Semiring a => Semigroup (Add' a)217,218
+  Add' Add'218,219
+pattern X X222,223
+pattern X <- <-223,224
+var var226,227
+pattern X' X'232,233
+pattern X' <- <-233,234
+var' var'236,237
+(^(^-)244,245
+X X245,246
+_ _246,247
+(-(-^)250,251
+X' X'251,252
+_ _252,253
+
+./src/Data/Poly/Internal/Dense.hs,1928
+module Data.Poly.Internal.DenseData.Poly.Internal.Dense17,18
+newtype Poly Poly81,82
+  { unPoly unPoly82,83
+instance (E(Eq a, Semiring a, G-Vector v a) => IsList (Poly v a)88,89
+  type Item Item89,90
+  fromList fromList90,91
+  fromListN fromListN91,92
+  toList toList92,93
+instance (S(Show a, G-Vector v a) => Show (Poly v a)94,95
+  showsPrec showsPrec95,96
+type VPoly VPoly111,112
+type UPoly UPoly114,115
+toPoly toPoly124,125
+toPoly' toPoly'127,128
+leading leading136,137
+instance (E(Eq a, Num a, G-Vector v a) => Num (Poly v a)142,143
+  Poly Poly143,144
+  negate negate145,146
+  abs abs146,147
+  signum signum147,148
+  fromInteger fromInteger148,149
+  Poly Poly151,152
+instance (E(Eq a, Semiring a, G-Vector v a) => Semiring (Poly v a)158,159
+  zero zero159,160
+  oneone160,161
+  plus plus163,164
+  times times164,165
+  fromNatural fromNatural171,172
+instance (E(Eq a, Ring a, G-Vector v a) => Ring (Poly v a)178,179
+  negate negate179,180
+dropWhileEnd dropWhileEnd186,187
+dropWhileEndM dropWhileEndM197,198
+plusPoly plusPoly211,212
+minusPoly minusPoly234,235
+karatsubaThreshold karatsubaThreshold254,255
+karatsuba karatsuba262,263
+convolution convolution312,313
+monomial monomial325,326
+monomial' monomial'330,331
+scaleInternal scaleInternal344,345
+scale scale358,359
+scale' scale'361,362
+data StrictPair StrictPair364,365
+data StrictPair a b = !a !a364,365
+fst' fst'368,369
+eval eval377,378
+eval' eval'382,383
+deriv deriv391,392
+deriv' deriv'397,398
+fromNatural fromNatural404,405
+newtype Add' Add'408,409
+newtype Add' a = Add' { getAdd' getAdd'408,409
+instance Semiring Semiring a => Semigroup (Add' a)410,411
+  Add' Add'411,412
+integral integral419,420
+integral' integral'433,434
+pattern X X448,449
+pattern X <- <-449,450
+var var452,453
+pattern X' X'459,460
+pattern X' <- <-460,461
+var' var'463,464
+
+./src/Data/Poly/Internal/PolyOverField.hs,743
+module Data.Poly.Internal.PolyOverFieldData.Poly.Internal.PolyOverField17,18
+newtype PolyOverField PolyOverField35,36
+newtype PolyOverField poly = PolyOverField { unPolyOverField unPolyOverField35,36
+type PolyOverFractional PolyOverFractional39,40
+pattern PolyOverFractional poly poly44,45
+unPolyOverFractional unPolyOverFractional47,48
+type Field Field52,53
+instance (E(Eq a, Eq (v a), Field a, G-Vector v a) => GcdDomain (PolyOverField (Dense-Poly v a))55,56
+  gcd gcd56,57
+instance (E(Eq a, Eq (v a), Field a, G-Vector v a) => Euclidean (PolyOverField (Dense-Poly v a))59,60
+  degree degree60,61
+  quotRem quotRem62,63
+  rem rem66,67
+module Data.Poly.Internal.PolyOverField Data.Poly.Internal.PolyOverField72,73
+
+./src/Data/Poly/Internal/Dense/Field.hs,531
+module Data.Poly.Internal.Dense.FieldData.Poly.Internal.Dense.Field20,21
+type Field Field42,43
+instance (E(Eq a, Eq (v a), Field a, G-Vector v a) => Euclidean (Poly v a)45,46
+  degree degree46,47
+  quotRem quotRem48,49
+  rem rem53,54
+quotientAndRemainder quotientAndRemainder61,62
+remainder remainder86,87
+remainderM remainderM100,101
+fieldGcd fieldGcd122,123
+gcdM gcdM133,134
+gcdExt gcdExt154,155
+scaleMonic scaleMonic179,180
+module Data.Poly.Internal.Dense.Field Data.Poly.Internal.Dense.Field186,187
+
+./src/Data/Poly/Internal/Dense/GcdDomain.hs,317
+module Data.Poly.Internal.Dense.GcdDomainData.Poly.Internal.Dense.GcdDomain17,18
+instance (E(Eq a, Ring a, GcdDomain a, Eq (v a), G-Vector v a) => GcdDomain (Poly v a)37,38
+  divide divide38,39
+  gcd gcd41,42
+gcdNonEmpty gcdNonEmpty52,53
+gcdM gcdM82,83
+isZeroM isZeroM126,127
+quotient quotient139,140
+
+./src/Data/Poly/Sparse.hs,47
+module Data.Poly.SparseData.Poly.Sparse12,13
+
+./src/Data/Poly/Semiring.hs,198
+module Data.Poly.SemiringData.Poly.Semiring12,13
+toPoly toPoly60,61
+monomial monomial64,65
+scale scale71,72
+pattern X X75,76
+eval eval84,85
+deriv deriv91,92
+integral integral100,101
+
+./src/Data/Poly/Laurent.hs,49
+module Data.Poly.LaurentData.Poly.Laurent11,12

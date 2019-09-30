@@ -15,6 +15,7 @@ import Prelude hiding (gcd, quotRem, rem)
 import Data.Euclidean
 #endif
 import Data.Int
+import Data.Maybe
 import Data.Poly
 import qualified Data.Poly.Semiring as S
 import Data.Proxy
@@ -33,9 +34,9 @@ instance (Eq a, Semiring a, Arbitrary a, G.Vector v a) => Arbitrary (Poly v a) w
   shrink = fmap (S.toPoly . G.fromList) . shrink . G.toList . unPoly
 
 #if MIN_VERSION_semirings(0,4,2)
-instance (Eq a, Semiring a, Arbitrary a, G.Vector v a) => Arbitrary (PolyOverFractional (Poly v a)) where
-  arbitrary = PolyOverFractional . S.toPoly . G.fromList . (\xs -> take (length xs `mod` 10) xs) <$> arbitrary
-  shrink = fmap (PolyOverFractional . S.toPoly . G.fromList) . shrink . G.toList . unPoly . unPolyOverFractional
+instance (Eq a, Semiring a, Arbitrary a, G.Vector v a) => Arbitrary (PolyOverField (Poly v a)) where
+  arbitrary = PolyOverField . S.toPoly . G.fromList . (\xs -> take (length xs `mod` 10) xs) <$> arbitrary
+  shrink = fmap (PolyOverField . S.toPoly . G.fromList) . shrink . G.toList . unPoly . unPolyOverField
 #endif
 
 newtype ShortPoly a = ShortPoly { unShortPoly :: a }
@@ -121,7 +122,7 @@ euclideanTests
   [
 #if MIN_VERSION_semirings(0,4,2) && MIN_VERSION_quickcheck_classes(0,6,3)
     gcdDomainLaws (Proxy :: Proxy (ShortPoly (Poly V.Vector Integer)))
-  , gcdDomainLaws (Proxy :: Proxy (PolyOverFractional (Poly V.Vector Rational)))
+  , gcdDomainLaws (Proxy :: Proxy (PolyOverField (Poly V.Vector Rational)))
   , euclideanLaws (Proxy :: Proxy (ShortPoly (Poly V.Vector Rational)))
 #endif
   ]
@@ -246,6 +247,8 @@ derivTests :: TestTree
 derivTests = testGroup "deriv"
   [ testProperty "deriv = S.deriv" $
     \(p :: Poly V.Vector Integer) -> deriv p === S.deriv p
+  , testProperty "integral = S.integral" $
+    \(p :: Poly V.Vector Rational) -> integral p === S.integral p
   , testProperty "deriv . integral = id" $
     \(p :: Poly V.Vector Rational) -> deriv (integral p) === p
   , testProperty "deriv c = 0" $
@@ -265,41 +268,19 @@ derivTests = testGroup "deriv"
 
 #if MIN_VERSION_semirings(0,4,2)
 gcdExtTests :: TestTree
-gcdExtTests = localOption (QuickCheckMaxSize 9) $ testGroup "gcdExt"
-  [
-    testProperty "gcdExt == S.gcdExt" $
+gcdExtTests = localOption (QuickCheckMaxSize 12) $ testGroup "gcdExt"
+  [ testProperty "gcdExt == S.gcdExt" $
     \(a :: Poly V.Vector Rational) b ->
       gcdExt a b === S.gcdExt a b
   , testProperty "g == as (mod b) for gcdExt" $
     \(a :: Poly V.Vector Rational) b -> b /= 0 ==>
       uncurry ((. flip rem b) . (===) . flip rem b) ((* a) <$> gcdExt a b)
-  , testProperty "gcdExt a a == (a, 0)" $
-    \(a :: Poly V.Vector Rational) -> a /= 0 ==>
-      gcdExt a a === (a, 0)
-  , testProperty "fractionalGcdExt == S.fractionalGcdExt" $
+  , testProperty "fst . gcdExt == gcd (mod units)" $
     \(a :: Poly V.Vector Rational) b ->
-      fractionalGcdExt a b === S.fractionalGcdExt a b
-  , testProperty "g == as (mod b) for fractionalGcdExt" $
-    \(a :: Poly V.Vector Rational) b -> b /= 0 ==>
-      uncurry ((. flip rem b) . (===) . flip rem b) ((* a) <$> fractionalGcdExt a b)
-  , testProperty "fractionalGcdExt a 0 == (a, 1) (mod units)" $
-    \(a :: Poly V.Vector Rational) ->
-      fractionalGcdExt a 0 === scaleMonic' a
-  , testProperty "fractionalGcdExt a 1 == (1, 0) (mod units)" $
-    \(a :: Poly V.Vector Rational) ->
-      fractionalGcdExt a 1 === (1, 0)
-  , testProperty "fractionalGcdExt a a == (a, 0) (mod units)" $
-    \(a :: Poly V.Vector Rational) ->
-      fractionalGcdExt a a === scaleMonic'' a
-  , testProperty "fst . fractionalGcdExt == gcd (mod units)" $
-    \(a :: Poly V.Vector Rational) b ->
-      fst (fractionalGcdExt a b) === fst (scaleMonic'' (gcd a b))
+      fst (gcdExt a b) `sameUpToUnits` gcd a b
   ]
-  where
-    scaleMonic' a = case scaleMonic a of
-      Just (c', a') -> (a', monomial 0 c')
-      Nothing -> (0, 1)
-    scaleMonic'' a = case scaleMonic a of
-      Just (_, a') -> (a', 0 :: Poly V.Vector Rational)
-      Nothing -> (0, 1)
+
+sameUpToUnits :: (Eq a, GcdDomain a) => a -> a -> Bool
+sameUpToUnits x y = x == y ||
+  isJust (x `divide` y) && isJust (y `divide` x)
 #endif

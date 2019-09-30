@@ -7,9 +7,8 @@
 -- Dense polynomials and a 'Semiring'-based interface.
 --
 
-{-# LANGUAGE CPP              #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PatternSynonyms  #-}
+{-# LANGUAGE CPP             #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Data.Poly.Semiring
   ( Poly
@@ -24,27 +23,31 @@ module Data.Poly.Semiring
   , pattern X
   , eval
   , deriv
+#if MIN_VERSION_semirings(0,5,0)
+  , integral
+#endif
 #if MIN_VERSION_semirings(0,4,2)
+  -- * Polynomials over 'Field'
+  , PolyOverField(..)
   , gcdExt
-  -- * Fractional coefficients
-  , PolyOverFractional(..)
-  , fractionalGcdExt
-  , scaleMonic
+  , PolyOverFractional
+  , pattern PolyOverFractional
+  , unPolyOverFractional
 #endif
   ) where
 
-import Data.Semiring (Ring, Semiring)
+import Data.Semiring (Semiring)
 import qualified Data.Vector.Generic as G
-#if MIN_VERSION_semirings(0,4,2)
-import Data.Euclidean (Euclidean)
-#endif
 
 import Data.Poly.Internal.Dense (Poly(..), VPoly, UPoly, leading)
 import qualified Data.Poly.Internal.Dense as Dense
 #if MIN_VERSION_semirings(0,4,2)
-import Data.Poly.Internal.Dense.Fractional (fractionalGcdExt, scaleMonic)
+import Data.Poly.Internal.Dense.Field (gcdExt)
 import Data.Poly.Internal.Dense.GcdDomain ()
-import Data.Poly.Internal.PolyOverFractional
+import Data.Poly.Internal.PolyOverField
+#endif
+#if MIN_VERSION_semirings(0,5,0)
+import Data.Euclidean (Field)
 #endif
 
 -- | Make 'Poly' from a vector of coefficients
@@ -89,16 +92,12 @@ eval = Dense.eval'
 deriv :: (Eq a, Semiring a, G.Vector v a) => Poly v a -> Poly v a
 deriv = Dense.deriv'
 
-#if MIN_VERSION_semirings(0,4,2)
--- | Execute the extended Euclidean algorithm.
--- For polynomials 'a' and 'b', compute their greatest common divisor 'g'
--- and the coefficient polynomial 's' satisfying 'a''s' + 'b''t' = 'g'.
+#if MIN_VERSION_semirings(0,5,0)
+-- | Compute an indefinite integral of a polynomial,
+-- setting constant term to zero.
 --
--- >>> gcdExt (X^2 + 1 :: UPoly Double) (X^3 + 3 * X :: UPoly Double)
--- (1.0, 0.5 * X^2 + (-0.0) * X + 1.0)
--- >>> gcdExt (X^3 + 3 * X :: UPoly Double) (3 * X^4 + 3 * X^2 :: UPoly Double)
--- (3.0 * X + 0.0, (-0.5) * X^2 + (-0.0) * X + 1.0)
-gcdExt :: (Eq (Poly v a), Euclidean (Poly v a), Ring (Poly v a))
-  => Poly v a -> Poly v a -> (Poly v a, Poly v a)
-gcdExt = Dense.gcdExt'
+-- >>> integral (3 * X^2 + 3) :: UPoly Double
+-- 1.0 * X^3 + 0.0 * X^2 + 3.0 * X + 0.0
+integral :: (Eq a, Field a, G.Vector v a) => Poly v a -> Poly v a
+integral = Dense.integral'
 #endif
