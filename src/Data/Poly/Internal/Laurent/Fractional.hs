@@ -32,7 +32,6 @@ import Control.Exception (ArithException(..), throw)
 import Data.Euclidean (Euclidean(..), GcdDomain(..))
 import qualified Data.Semiring as Semiring (Ring)
 import qualified Data.Vector.Generic as G
-
 import Data.Poly.Internal.Laurent
 import Data.Poly.Internal.Laurent.GcdDomain ()
 
@@ -48,19 +47,25 @@ quotientRemainder
   => Poly v a
   -> Poly v a
   -> (Poly v a, Poly v a)
-quotientRemainder ts ys = case leading ys of
-  Nothing -> throw DivideByZero
-  Just (yp, yc) -> go ts
-    where
-      go xs = case leading xs of
-        Nothing -> (0, 0)
-        Just (xp, xc) -> case xp `compare` yp of
-          LT -> (0, xs)
-          EQ -> (zs, xs')
-          GT -> first (+ zs) $ go xs'
-          where
-            zs = Poly $ G.singleton (xp - yp, xc / yc)
-            xs' = xs - zs * ys
+quotientRemainder numer denom
+  = let (q, r) = (scale multiplier 1 numer `quotientRemainder'` denom)
+    in (scale (negate multiplier) 1 q, scale (negate multiplier) 1 r)
+  where
+    multiplier = if getLowerExp numer < 0 then abs $ getLowerExp numer else 0
+    getLowerExp = foldr (\(e, _coeff) acc -> if e < acc then e else acc) 0 . G.toList . unPoly
+    quotientRemainder' ts ys = case leading ys of
+      Nothing -> throw DivideByZero
+      Just (yp, yc) -> go ts
+        where
+          go xs = case leading xs of
+            Nothing -> (0, 0)
+            Just (xp, xc) -> case xp `compare` yp of
+              LT -> (0, xs)
+              EQ -> (zs, xs')
+              GT -> (first (+ zs) $ go xs')
+              where
+                zs = Poly $ G.singleton (xp - yp, xc / yc)
+                xs' = xs - zs * ys
 
 fractionalGcd
   :: (Eq a, Fractional a, G.Vector v (Int, a))
