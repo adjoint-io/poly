@@ -48,10 +48,10 @@ quotientRemainder
   -> Poly v a
   -> (Poly v a, Poly v a)
 quotientRemainder numer denom
-  = let (q, r) = (scale multiplier 1 numer `quotientRemainder'` denom)
-    in (scale (negate multiplier) 1 q, scale (negate multiplier) 1 r)
+  = let (q, r) = (scale (abs xn) 1 numer `quotientRemainder'` denom)
+    in (scale xn 1 q, scale xn 1 r)
   where
-    multiplier = if getLowerExp numer < 0 then abs $ getLowerExp numer else 0
+    xn = if getLowerExp numer < 0 then getLowerExp numer else 0
     getLowerExp = foldr (\(e, _coeff) acc -> if e < acc then e else acc) 0 . G.toList . unPoly
     quotientRemainder' ts ys = case leading ys of
       Nothing -> throw DivideByZero
